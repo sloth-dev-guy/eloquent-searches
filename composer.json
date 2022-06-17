@@ -1,0 +1,55 @@
+{
+    "name": "sloth-dev-guy/searches",
+    "description": "Perform searches with Eloquent models using an array-like API setup",
+    "keywords": [
+        "laravel",
+        "eloquent",
+        "search",
+        "query-builder",
+        "database",
+        "model",
+        "generator"
+    ],
+    "homepage": "https://github.com/sloth-dev-guy/searches",
+    "authors": [
+        {
+            "name": "Telmo Rafael",
+            "email": "sloth.dev.guy@gmail.com",
+            "homepage": "https://sloth-guy.dev"
+        }
+    ],
+    "license": "MIT",
+    "require": {
+        "illuminate/support": "^9.0",
+        "illuminate/container": "^9.0",
+        "illuminate/database": "^9.0",
+        "illuminate/events": "^9.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.5",
+        "mockery/mockery": "^1.3",
+        "doctrine/dbal": "^2.13|^3.1"
+    },
+    "autoload": {
+        "files": [
+            "src/helpers.php"
+        ],
+        "psr-4": {
+            "SlothDevGuy\\Searches\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "suggest": {
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "SlothDevGuy\\Searches\\EloquentSearchServiceProvider"
+            ]
+        }
+    }
+}
