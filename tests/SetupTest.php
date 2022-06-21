@@ -8,7 +8,7 @@ namespace Tests;
  */
 class SetupTest extends TestCase
 {
-    use WithConnection, WithFaker;
+    use WithDB, WithFaker;
 
     /**
      * Test all the configurations and database setup.
@@ -17,6 +17,8 @@ class SetupTest extends TestCase
      */
     public function testApp()
     {
+        $this->migrate();
+
         $this->assertNotEmpty($this->faker()->name);
 
         $tables = $this->connection()->table('sqlite_schema')
@@ -25,13 +27,5 @@ class SetupTest extends TestCase
             ->get();
 
         $this->assertEquals(7, $tables->count());
-    }
-
-    /**
-     * @return void
-     */
-    public function setUp(): void
-    {
-        $this->bootConnection();
     }
 }

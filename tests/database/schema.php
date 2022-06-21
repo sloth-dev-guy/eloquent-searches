@@ -1,7 +1,5 @@
 <?php
 
-use Illuminate\Container\Container;
-use Illuminate\Database\Capsule\Manager;
 use Illuminate\Database\Connection;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -15,30 +13,13 @@ return new class extends Migration
     protected $builder;
 
     /**
-     * @param Container|null $container
-     * @return Connection
-     */
-    public function boot(Container $container = null)
-    {
-        $configurations = require dirname(__FILE__, 3) . '/config/database.php';
-        $connection = data_get($configurations, 'default', env('DB_CONNECTION'));
-
-        $capsule = new Manager($container);
-        $capsule->addConnection(data_get($configurations, "connections.{$connection}"));
-
-        $capsule->setAsGlobal();
-        $capsule->bootEloquent();
-
-        $this->builder = new Builder($connection = $capsule->getConnection());
-
-        return $connection;
-    }
-
-    /**
+     * @param Connection $connection
      * @return Builder
      */
-    public function getBuilder()
+    public function getBuilder(Connection $connection)
     {
+        $this->builder = new Builder($connection);
+
         return $this->builder;
     }
 
@@ -47,10 +28,8 @@ return new class extends Migration
      *
      * @return void
      */
-    public function up()
+    public function up(Builder $builder)
     {
-        $builder = $this->getBuilder();
-
         $builder->dropIfExists('users');
         $builder->create('users', function (Blueprint $table) {
             $table->id();
