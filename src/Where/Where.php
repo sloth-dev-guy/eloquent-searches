@@ -89,7 +89,8 @@ class Where extends BaseWhere
         }
 
         //is string(like) search and has a wildcard set
-        if($operator === 'like' && ($wildcard = $arguments->option('wildcard'))){
+        //@todo maybe only replace if a wildcard is present?
+        if(in_array($operator, ['like', 'not like']) && ($wildcard = $arguments->option('wildcard'))){
             $value = str_replace('_', $value, $wildcard);
         }
 

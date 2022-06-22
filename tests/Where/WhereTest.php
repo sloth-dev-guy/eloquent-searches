@@ -59,6 +59,42 @@ class WhereTest extends TestCase
     }
 
     /**
+     * @return void
+     */
+    public function testNegation()
+    {
+        $negatedOperators = [
+            '=' => '<>',
+            '<>' => '=',
+            '>' => '<=',
+            '>=' => '<',
+            '<' => '>=',
+            '<=' => '>',
+            '%_' => 'not like',
+        ];
+
+        $field = 'foo';
+        $value = 'bar';
+
+        foreach ($negatedOperators as $operator => $negatedOperator){
+            $not = collect([true, false])->random()? 'not' : '!';
+
+            $key = "$field|$not|$operator";
+
+            /** @var SearchWhereBuilder $whereBuilder */
+            $whereBuilder = SearchWhereBuilder::buildFromKeyAndValue($this->mockSearcher(), $key, $value);
+
+            $this->assertNotNull($whereBuilder);
+
+            if(in_array($operator, ['%_%', '_%', '%_'])){
+                $value = str_replace('_', $value, $operator);
+            }
+
+            $this->assertWhereBuilder($whereBuilder, $field, $negatedOperator, $value);
+        }
+    }
+
+    /**
      * @param SearchWhereBuilder $whereBuilder
      * @param string $field
      * @param string $operator
