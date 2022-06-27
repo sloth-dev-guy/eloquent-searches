@@ -2,7 +2,6 @@
 
 namespace Tests\Where;
 
-use SlothDevGuy\Searches\Searcher;
 use SlothDevGuy\Searches\Where\SearchWhereBuilder;
 use SlothDevGuy\Searches\Where\Where;
 use Tests\TestCase;
@@ -14,7 +13,7 @@ use Tests\WithDB;
  */
 class WhereTest extends TestCase
 {
-    use WithDB;
+    use WithDB, MockSearcher;
 
     /**
      * @return void
@@ -87,19 +86,5 @@ class WhereTest extends TestCase
 
         foreach ($arguments as $index => $value)
             $this->assertEquals($value, $whereArguments[$index]);
-    }
-
-    /**
-     * @return Searcher
-     */
-    protected function mockSearcher() : Searcher
-    {
-        $searcher = $this->createMock(Searcher::class);
-
-        $searcher->expects($this->atLeastOnce())
-            ->method('getFromQualifiedField')
-            ->will($this->returnCallback(fn($field) => "test.{$field}"));
-
-        return $searcher;
     }
 }
