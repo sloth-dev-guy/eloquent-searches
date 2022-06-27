@@ -13,7 +13,7 @@ use Tests\WithDB;
  */
 class WhereTest extends TestCase
 {
-    use WithDB, MockSearcher;
+    use MockSearcher, WhereBuilderAssertions;
 
     /**
      * @return void
@@ -28,7 +28,15 @@ class WhereTest extends TestCase
 
         $this->assertNotNull($whereBuilder);
 
-        $this->assertWhereBuilder($whereBuilder, $key, '=', $value);
+        $this->assertWhereBuilder($whereBuilder, [
+            'where_instance_of' => Where::class,
+            'method' => 'where',
+            'arguments' => [
+                "test.{$key}",
+                '=',
+                $value
+            ]
+        ]);
     }
 
     /**
@@ -53,7 +61,15 @@ class WhereTest extends TestCase
                 $operator = 'like';
             }
 
-            $this->assertWhereBuilder($whereBuilder, $field, $operator, $value);
+            $this->assertWhereBuilder($whereBuilder, [
+                'where_instance_of' => Where::class,
+                'method' => 'where',
+                'arguments' => [
+                    "test.{$field}",
+                    $operator,
+                    $value
+                ]
+            ]);
         }
     }
 
@@ -69,7 +85,9 @@ class WhereTest extends TestCase
             '>=' => '<',
             '<' => '>=',
             '<=' => '>',
+            '_%' => 'not like',
             '%_' => 'not like',
+            '%_%' => 'not like',
         ];
 
         $field = 'foo';
@@ -89,38 +107,42 @@ class WhereTest extends TestCase
                 $value = str_replace('_', $value, $operator);
             }
 
-            $this->assertWhereBuilder($whereBuilder, $field, $negatedOperator, $value);
+            $this->assertWhereBuilder($whereBuilder, [
+                'where_instance_of' => Where::class,
+                'method' => 'where',
+                'arguments' => [
+                    "test.{$field}",
+                    $negatedOperator,
+                    $value
+                ]
+            ]);
         }
     }
 
     /**
-     * @param SearchWhereBuilder $whereBuilder
-     * @param string $field
-     * @param string $operator
-     * @param string $value
      * @return void
      */
-    protected function assertWhereBuilder(SearchWhereBuilder $whereBuilder, $field, $operator, $value)
+    protected function testWhereCustomArguments()
     {
-        $where = $whereBuilder->where();
+        $field = 'foo';
+        $operator = 'regexp';
+        $value = '\\bar\\b';
 
-        $this->assertInstanceOf(Where::class, $where);
+        $key = "{$field}|where:{$operator}";
 
-        $wherePayload = $where->where();
+        /** @var SearchWhereBuilder $whereBuilder */
+        $whereBuilder = SearchWhereBuilder::buildFromKeyAndValue($this->mockSearcher(), $key, $value);
 
-        $this->assertEquals('where', data_get($wherePayload, 'method'));
+        $this->assertNotNull($whereBuilder);
 
-        $arguments = [
-            "test.{$field}",
-            $operator,
-            $value
-        ];
-
-        $whereArguments = array_values(data_get($wherePayload, 'arguments', []));
-
-        $this->assertSameSize($arguments, $whereArguments);
-
-        foreach ($arguments as $index => $value)
-            $this->assertEquals($value, $whereArguments[$index]);
+        $this->assertWhereBuilder($whereBuilder, [
+            'where_instance_of' => Where::class,
+            'method' => 'where',
+            'arguments' => [
+                "test.{$field}",
+                $operator,
+                $value
+            ]
+        ]);
     }
 }

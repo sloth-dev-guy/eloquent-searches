@@ -30,6 +30,7 @@ class WhereArguments implements Arrayable
             'whereNull' => ['null'],
             'whereBetween' => ['><', 'between'],
             'whereColumn' => ['column'],
+            'whereFullText' => ['full-text']
         ],
     ];
 

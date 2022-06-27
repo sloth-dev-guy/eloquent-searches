@@ -13,7 +13,7 @@ use Tests\WithDB;
  */
 class WhereBetweenTest extends TestCase
 {
-    use WithDB, MockSearcher, AssertWhereBuilderDefaults;
+    use MockSearcher, WhereBuilderAssertions;
 
     public function testBetween()
     {
@@ -30,7 +30,14 @@ class WhereBetweenTest extends TestCase
 
             $this->assertNotNull($whereBuilder);
 
-            $this->assertWhereBuilder($whereBuilder, $field, $values);
+            $this->assertWhereBuilder($whereBuilder, [
+                'where_instance_of' => WhereBetween::class,
+                'method' => 'whereBetween',
+                'arguments' => [
+                    "test.{$field}",
+                    $values,
+                ]
+            ]);
         }
     }
 
@@ -51,20 +58,14 @@ class WhereBetweenTest extends TestCase
 
             $this->assertNotNull($whereBuilder);
 
-            $this->assertWhereBuilder($whereBuilder, $field, $values, [
+            $this->assertWhereBuilder($whereBuilder, [
+                'where_instance_of' => WhereBetween::class,
                 'method' => 'whereNotBetween',
+                'arguments' => [
+                    "test.{$field}",
+                    $values,
+                ]
             ]);
         }
-    }
-
-    /**
-     * @return array
-     */
-    protected function whereArguments()
-    {
-        return [
-            'method' => 'whereBetween',
-            'where_instance_of' => WhereBetween::class,
-        ];
     }
 }

@@ -13,7 +13,7 @@ use Tests\WithDB;
  */
 class WhereInTest extends TestCase
 {
-    use WithDB, MockSearcher, AssertWhereBuilderDefaults;
+    use MockSearcher, WhereBuilderAssertions;
 
     public function testIn()
     {
@@ -30,7 +30,14 @@ class WhereInTest extends TestCase
 
             $this->assertNotNull($whereBuilder);
 
-            $this->assertWhereBuilder($whereBuilder, $field, $values);
+            $this->assertWhereBuilder($whereBuilder, [
+                'where_instance_of' => WhereIn::class,
+                'method' => 'whereIn',
+                'arguments' => [
+                    "test.{$field}",
+                    $values,
+                ]
+            ]);
         }
     }
 
@@ -52,20 +59,14 @@ class WhereInTest extends TestCase
 
             $this->assertNotNull($whereBuilder);
 
-            $this->assertWhereBuilder($whereBuilder, $field, $values, [
-                'method' => 'whereNotIn'
+            $this->assertWhereBuilder($whereBuilder, [
+                'where_instance_of' => WhereIn::class,
+                'method' => 'whereNotIn',
+                'arguments' => [
+                    "test.{$field}",
+                    $values,
+                ]
             ]);
         }
-    }
-
-    /**
-     * @return array
-     */
-    protected function whereArguments()
-    {
-        return [
-            'method' => 'whereIn',
-            'where_instance_of' => WhereIn::class,
-        ];
     }
 }

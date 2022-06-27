@@ -59,7 +59,9 @@ class Where extends BaseWhere
         $arguments = $this->arguments();
 
         if($arguments->not()) {
-            $arguments->operator(static::$negatedOperators[$arguments->operator()]);
+            $negatedOperator = data_get(static::$negatedOperators, $arguments->operator(), $arguments->operator());
+
+            $arguments->operator($negatedOperator);
         }
 
         return $this;
