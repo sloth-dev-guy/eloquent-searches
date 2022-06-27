@@ -26,6 +26,7 @@ class WhereArguments implements Arrayable
         'operators' => ['=', '<>', '>', '<', '>=', '<='],
         'methodPattern' => '/^where([a-z\-]*)$/',
         'method_aliases' => [
+            'whereIn' => ['in'],
             'whereNull' => ['null'],
             'whereBetween' => ['><', 'between'],
             'whereColumn' => ['column'],
