@@ -5,7 +5,6 @@ namespace Tests\Where;
 use SlothDevGuy\Searches\Where\SearchWhereBuilder;
 use SlothDevGuy\Searches\Where\Where;
 use Tests\TestCase;
-use Tests\WithDB;
 
 /**
  * Class WhereTest

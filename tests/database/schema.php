@@ -30,76 +30,114 @@ return new class extends Migration
      */
     public function up(Builder $builder)
     {
-        $builder->dropIfExists('users');
-        $builder->create('users', function (Blueprint $table) {
+        $builder->dropIfExists('persons');
+        $builder->create('persons', function (Blueprint $table) {
             $table->id();
-            $table->string('email')->index();
-            $table->string('username')->unique();
-            $table->string('password');
+            $table->string('name');
+            $table->string('last_name');
+            $table->dateTime('birth_date');
+            $table->enum('sex', ['M', 'F']);
+            $table->timestamps();
+            $table->softDeletes();
+        });
+
+        $builder->dropIfExists('tag');
+        $builder->create('tag', function (Blueprint $table) {
+            $table->id();
+            $table->string('title');
+            $table->boolean('active');
+            $table->timestamps();
+        });
+
+        $builder->create('taggable', function (Blueprint $table){
+            $table->foreignId('tag_id')->constrained('tag');
+            $table->morphs('taggable', 'taggable_class');
+            $table->unsignedInteger('order')->nullable();
+            $table->timestamp('updated_at')->nullable();
+        });
+
+        $builder->dropIfExists('country');
+        $builder->create('country', function (Blueprint $table) {
+            $table->id();
+            $table->char('iso_code', 5)->unique();
             $table->string('name');
             $table->timestamps();
             $table->softDeletes();
         });
 
-        $builder->dropIfExists('posts');
-        $builder->create('posts', function (Blueprint $table) {
+        $builder->dropIfExists('administrative_division');
+        $builder->create('location', function (Blueprint $table) {
             $table->id();
-            $table->string('title');
-            $table->longText('content');
+            $table->foreignId('administrative_division_id')->nullable()->constrained('administrative_division');
+            $table->foreignId('country_id')->constrained('country');
+            $table->foreignId('tag_id')->constrained('tag');
+            $table->string('abbr', 10)->unique();
+            $table->string('name');
+            $table->json('options')->nullable();
             $table->timestamps();
             $table->softDeletes();
+        });
+
+        $builder->dropIfExists('location');
+        $builder->create('location', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('country_id')->constrained('country');
+            $table->foreignId('administrative_division_id')->constrained('administrative_division');
+            $table->string('abbr', 10)->unique()->nullable();
+            $table->string('name');
+            $table->timestamps();
+            $table->softDeletes();
+        });
+
+        $builder->dropIfExists('addresses');
+        $builder->create('addresses', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('person_id')->constrained();
+            $table->foreignId('country_id')->constrained('country');
+            $table->foreignId('location_id')->constrained('location');
+            $table->text('description');
+            $table->json('options')->nullable();
+            $table->timestamps();
+            $table->softDeletes();
+        });
+
+        $builder->dropIfExists('tasks');
+        $builder->create('tasks', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('owner_id')->constrained('persons');
+            $table->string('title');
+            $table->text('description');
+            $table->boolean('complete')->default(true);
+            $table->json('options')->nullable();
+            $table->timestamps();
+            $table->softDeletes();
+        });
+
+        $builder->dropIfExists('task_follower');
+        $builder->create('task_follower', function (Blueprint $table){
+            $table->foreignId('task_id')->constrained();
+            $table->foreignId('person_id')->constrained();
+
+            $table->unique(['person_id', 'task_id'], 'task_follower_unique');
         });
 
         $builder->dropIfExists('comments');
         $builder->create('comments', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('post_id');
-            $table->string('title');
-            $table->longText('content');
+            $table->foreignId('author_id')->constrained('persons');
+            $table->foreignId('task_id')->constrained();
+            $table->longText('body');
             $table->timestamps();
             $table->softDeletes();
-
-            $table->foreign('post_id')->on('posts')->references('id');
         });
 
-        $builder->dropIfExists('replies');
-        $builder->create('replies', function (Blueprint $table) {
+        $builder->dropIfExists('attachments');
+        $builder->create('attachments', function (Blueprint $table){
             $table->id();
-            $table->foreignId('comment_id');
-            $table->foreignId('reply_id')->nullable();
-            $table->longText('content');
+            $table->morphs('owner');
+            $table->string('path');
             $table->timestamps();
             $table->softDeletes();
-
-            $table->foreign('comment_id')->on('comments')->references('id');
-            $table->foreign('reply_id')->on('replies')->references('id');
-        });
-
-        //singular on purpose
-        $builder->dropIfExists('tag');
-        $builder->create('tag', function (Blueprint $table) {
-            $table->id();
-            $table->string('title');
-        });
-
-        $builder->dropIfExists('post_tag');
-        $builder->create('post_tag', function (Blueprint $table) {
-            $table->foreignId('post_id');
-            $table->foreignId('tag_id');
-
-            $table->foreign('post_id')->on('posts')->references('id');
-            $table->foreign('tag_id')->on('tag')->references('id');
-
-            $table->unique(['post_id', 'tag_id']);
-        });
-
-        $builder->dropIfExists('authors');
-        $builder->create('authors', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id');
-
-            $table->foreign('user_id')->on('users')->references('id');
-            $table->morphs('of_content');
         });
     }
 
