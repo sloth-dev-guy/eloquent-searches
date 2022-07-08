@@ -29,7 +29,7 @@ class JoinHasOneOrMany extends JoinRelationship
     /**
      * @return array[]
      */
-    public function joins() : array
+    public function on() : array
     {
         $relationship = $this->relationship;
 
@@ -37,12 +37,7 @@ class JoinHasOneOrMany extends JoinRelationship
         $operator = $this->joinOperator();
         $second = $this->getToTableQualifiedField($relationship->getForeignKeyName());
 
-        $baseJoin = [
-            'table' => $this->getJoinContext(),
-            'arguments' => [$first, $operator, $second],
-        ];
-
-        return [$baseJoin];
+        return [$first, $operator, $second];
     }
 
     /**

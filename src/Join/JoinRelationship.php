@@ -2,6 +2,8 @@
 
 namespace SlothDevGuy\Searches\Join;
 
+use Closure;
+use Illuminate\Database\Query\JoinClause;
 use SlothDevGuy\Searches\JoinRelationshipBuilder;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -62,6 +64,56 @@ abstract class JoinRelationship implements JoinRelationshipBuilder
     public function to() : Model
     {
         return $this->relationship->getModel();
+    }
+
+    /**
+     * @return array[]
+     */
+    public function joins() : array
+    {
+        return [
+            $this->baseJoin()
+        ];
+    }
+
+    /**
+     * @return array|Closure[]
+     */
+    protected function baseJoin()
+    {
+        $join = [
+            'table' => $this->getJoinContext(),
+            'arguments' => array_values($this->on()),
+        ];
+
+        if(!empty($this->wheres())){
+            $join['arguments'] = $this->joinClosure();
+        }
+
+        return $join;
+    }
+
+    /**
+     * @return Closure
+     */
+    protected function joinClosure()
+    {
+        return function (JoinClause $join) {
+            $on = $this->on();
+            $join->on(...array_values($on));
+
+            foreach ($this->wheres() as $where){
+                $join->where(...array_values($where));
+            }
+        };
+    }
+
+    /**
+     * @return array
+     */
+    public function wheres(): array
+    {
+        return [];
     }
 
     /**

@@ -38,21 +38,6 @@ class JoinMorphOneOrMany extends JoinRelationship
     }
 
     /**
-     * @return Closure
-     */
-    protected function joinClosure()
-    {
-        return function (JoinClause $join) {
-            $on = $this->on();
-            $join->on(...array_values($on));
-
-            foreach ($this->wheres() as $where){
-                $join->where(...array_values($where));
-            }
-        };
-    }
-
-    /**
      * @return array
      */
     public function on() : array

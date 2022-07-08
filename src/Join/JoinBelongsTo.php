@@ -26,10 +26,7 @@ class JoinBelongsTo extends JoinRelationship
         $this->options = static::defaultOptions($options);
     }
 
-    /**
-     * @return array[]
-     */
-    public function joins() : array
+    public function on(): array
     {
         $relationship = $this->relationship;
 
@@ -37,12 +34,7 @@ class JoinBelongsTo extends JoinRelationship
         $operator = $this->joinOperator();
         $second = $this->getFromTableQualifiedField($relationship->getForeignKeyName());
 
-        $baseJoin = [
-            'table' => $this->getJoinContext(),
-            'arguments' => [$first, $operator, $second],
-        ];
-
-        return [$baseJoin];
+        return compact('first', 'operator', 'second');
     }
 
     /**

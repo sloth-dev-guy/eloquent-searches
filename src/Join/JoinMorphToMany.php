@@ -35,50 +35,40 @@ class JoinMorphToMany extends JoinRelationship
      */
     public function joins() : array
     {
-        $relationship = $this->relationship;
+        return [
+            $this->pivotJoin(),
+            $this->baseJoin()
+        ];
+    }
 
-        $pivotAlias = $this->options['pivot_table_alias'];
+    /**
+     * @return array
+     */
+    public function pivotJoin()
+    {
+        $pivotAlias = $this->option('pivot_table_alias');
         $pivotJoinContext = $pivotAlias?
             "{$this->relationship->getTable()} as {$pivotAlias}" :
             $this->relationship->getTable();
 
-        $pivotJoin = [
+        return [
             'table' => $pivotJoinContext,
             'arguments' => [
-                $this->joinClosure(),
+                $this->pivotJoinClosure(),
             ],
         ];
-
-        $first = $this->getToTableQualifiedField($relationship->getParentKeyName());
-        $operator = $this->joinOperator();
-        $second = $this->getPivotTableQualifiedField($relationship->getRelatedPivotKeyName());
-
-        $baseJoin = [
-            'table' => $this->getJoinContext(),
-            'arguments' => [$first, $operator, $second],
-        ];
-
-        return [$pivotJoin, $baseJoin];
-    }
-
-    /**
-     * @return Model
-     */
-    public function to() : Model
-    {
-        return $this->relationship->getModel();
     }
 
     /**
      * @return Closure
      */
-    protected function joinClosure()
+    public function pivotJoinClosure()
     {
         return function (JoinClause $join) {
-            $on = $this->on();
+            $on = $this->onPivot();
             $join->on(...array_values($on));
 
-            foreach ($this->wheres() as $where){
+            foreach ($this->wherePivot() as $where){
                 $join->where(...array_values($where));
             }
         };
@@ -87,7 +77,21 @@ class JoinMorphToMany extends JoinRelationship
     /**
      * @return array
      */
-    public function on() : array
+    public function on(): array
+    {
+        $relationship = $this->relationship;
+
+        $first = $this->getToTableQualifiedField($relationship->getParentKeyName());
+        $operator = $this->joinOperator();
+        $second = $this->getPivotTableQualifiedField($relationship->getRelatedPivotKeyName());
+
+        return [$first, $operator, $second];
+    }
+
+    /**
+     * @return array
+     */
+    public function onPivot() : array
     {
         $relationship = $this->relationship;
 
@@ -101,7 +105,7 @@ class JoinMorphToMany extends JoinRelationship
     /**
      * @return array
      */
-    public function wheres() : array
+    public function wherePivot() : array
     {
         $relationship = $this->relationship;
 
@@ -124,7 +128,7 @@ class JoinMorphToMany extends JoinRelationship
 
     public function getPivotTableQualifiedField(string $field) : string
     {
-        return static::getQualifiedField($field, $this->relationship->getTable(), $this->options['pivot_table_alias']);
+        return static::getQualifiedField($field, $this->relationship->getTable(), $this->option('pivot_table_alias'));
     }
 
     /**
@@ -140,7 +144,7 @@ class JoinMorphToMany extends JoinRelationship
      * @param array $options
      * @return array
      */
-    protected static function defaultOptions(array $options = []): array
+    public static function defaultOptions(array $options = []): array
     {
         $options = parent::defaultOptions($options);
 

@@ -40,6 +40,16 @@ interface JoinRelationshipBuilder
     public function joins() : array;
 
     /**
+     * @return array
+     */
+    public function on() : array;
+
+    /**
+     * @return array
+     */
+    public function wheres() : array;
+
+    /**
      * @param string $key
      * @param mixed $default
      * @return mixed

@@ -37,6 +37,7 @@ class SearchJoinRelationshipBuilder implements SearchBuilder
      */
     protected static $supportedRelationships = [
         'belongs-to' => JoinBelongsTo::class,
+        'belongs-to-many' => JoinBelongsToMany::class,
         'has-one' => JoinHasOneOrMany::class,
         'has-many' => JoinHasOneOrMany::class,
         'has-one-or-many' => JoinHasOneOrMany::class,
