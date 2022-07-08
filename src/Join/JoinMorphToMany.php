@@ -45,7 +45,7 @@ class JoinMorphToMany extends JoinRelationship
         $pivotJoin = [
             'table' => $pivotJoinContext,
             'arguments' => [
-                $this->joinPivotClosure(),
+                $this->joinClosure(),
             ],
         ];
 
@@ -70,40 +70,54 @@ class JoinMorphToMany extends JoinRelationship
     }
 
     /**
-     * @param Relation $relationship
-     * @return bool
+     * @return Closure
      */
-    public static function instanceOf(Relation $relationship) : bool
+    protected function joinClosure()
     {
-        return $relationship instanceof MorphToMany;
+        return function (JoinClause $join) {
+            $on = $this->on();
+            $join->on(...array_values($on));
+
+            foreach ($this->wheres() as $where){
+                $join->where(...array_values($where));
+            }
+        };
     }
 
     /**
-     * @return Closure
+     * @return array
      */
-    protected function joinPivotClosure()
+    public function on() : array
     {
-        return function (JoinClause $join) {
-            $relationship = $this->relationship;
+        $relationship = $this->relationship;
 
-            $first = $this->getFromTableQualifiedField($relationship->getParentKeyName());
-            $operator = $this->joinOperator();
-            $second = $this->getPivotTableQualifiedField($relationship->getForeignPivotKeyName());
+        $first = $this->getFromTableQualifiedField($relationship->getParentKeyName());
+        $operator = $this->joinOperator();
+        $second = $this->getPivotTableQualifiedField($relationship->getForeignPivotKeyName());
 
-            $join->on($first, $operator, $second);
+        return compact('first', 'operator', 'second');
+    }
 
-            $first = $this->getPivotTableQualifiedField($relationship->getMorphType());
-            $operator = $this->joinOperator();
-            $second = $this->getModelClass();
+    /**
+     * @return array
+     */
+    public function wheres() : array
+    {
+        $relationship = $this->relationship;
 
-            $join->where($first, $operator, $second);
-        };
+        $first = $this->getPivotTableQualifiedField($relationship->getMorphType());
+        $operator = $this->joinOperator();
+        $second = $this->getModelClass();
+
+        return [
+            compact('first', 'operator', 'second'),
+        ];
     }
 
     /**
      * @return string
      */
-    protected function getModelClass() : string
+    public function getModelClass() : string
     {
         return get_class($this->from());
     }
@@ -111,6 +125,15 @@ class JoinMorphToMany extends JoinRelationship
     public function getPivotTableQualifiedField(string $field) : string
     {
         return static::getQualifiedField($field, $this->relationship->getTable(), $this->options['pivot_table_alias']);
+    }
+
+    /**
+     * @param Relation $relationship
+     * @return bool
+     */
+    public static function instanceOf(Relation $relationship) : bool
+    {
+        return $relationship instanceof MorphToMany;
     }
 
     /**

@@ -40,6 +40,9 @@ class SearchJoinRelationshipBuilder implements SearchBuilder
         'has-one' => JoinHasOneOrMany::class,
         'has-many' => JoinHasOneOrMany::class,
         'has-one-or-many' => JoinHasOneOrMany::class,
+        'morph-one-or-many' => JoinMorphOneOrMany::class,
+        'morph-one' => JoinMorphOneOrMany::class,
+        'morph-many' => JoinMorphOneOrMany::class,
         'morph-to-many' => JoinMorphToMany::class,
     ];
 

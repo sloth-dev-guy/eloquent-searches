@@ -2,17 +2,13 @@
 
 namespace Tests\Joins;
 
-use SlothDevGuy\Searches\Join\JoinBelongsTo;
+use SlothDevGuy\Searches\Join\JoinMorphOneOrMany;
 use SlothDevGuy\Searches\Join\SearchJoinRelationshipBuilder;
-use Tests\database\Address;
-use Tests\database\Location;
+use Tests\database\Attachment;
+use Tests\database\Comment;
 use Tests\TestCase;
 
-/**
- * Class BelongsToTest
- * @package Tests\Joins
- */
-class BelongsToTest extends TestCase
+class MorphOneOrManyTest extends TestCase
 {
     use MockSearcher, JoinBuilderAssertions;
 
@@ -22,17 +18,18 @@ class BelongsToTest extends TestCase
 
         $joinData = [
             'values' => [],
-            'model' => Location::class,
-            'table' => 'location',
-            'relation' => 'location',
-            'foreign_key' => 'location_id',
+            'model' => Attachment::class,
+            'table' => 'attachments',
+            'relation' => 'attachments',
+            'foreign_type' => 'owner_type',
+            'foreign_key' => 'owner_id',
             'aliases' => [null, 'foo', 'bar']
         ];
 
         $joinTypes = [null, 'join', 'left-join'];
 
         $from = [
-            'model' => $model = new Address(),
+            'model' => $model = new Comment(),
             'table' => $model->getTable(),
         ];
 
@@ -53,20 +50,39 @@ class BelongsToTest extends TestCase
             $joinContext = $alias? : $joinData['table'];
 
             $this->assertJoinBuilder($joinBuilder, [
-                'join_instance_of' => JoinBelongsTo::class,
+                'join_instance_of' => JoinMorphOneOrMany::class,
                 'related_instance_of' => $joinData['model'],
                 'method' => $joinType? data_get(static::$supportedJoins, $joinType, 'join') : 'join',
                 'arguments' => [
                     [
                         'table' => $join,
                         'arguments' => [
-                            "{$joinContext}.id",
-                            '=',
-                            "{$from['table']}.{$joinData['foreign_key']}"
+                            function(){ },
                         ],
                     ],
                 ]
             ]);
+
+            /** @var JoinMorphOneOrMany $join */
+            $join = $joinBuilder->join();
+
+            $first = "{$from['table']}.id";
+            $operator = '=';
+            $second = "{$joinContext}.{$joinData['foreign_key']}";
+
+            $on = compact('first', 'operator', 'second');
+            $this->assertEquals($on, $join->on());
+
+            $first = "{$joinContext}.{$joinData['foreign_type']}";
+            $second = get_class($from['model']);
+
+            $where = compact('first', 'operator', 'second');
+            $this->assertEquals($where, collect($join->wheres())->first());
         }
+    }
+
+    public function testInverseJoin()
+    {
+
     }
 }
