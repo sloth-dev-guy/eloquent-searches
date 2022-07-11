@@ -44,7 +44,7 @@ class JoinMorphToMany extends JoinRelationship
     /**
      * @return array
      */
-    public function pivotJoin()
+    public function pivotJoin() : array
     {
         $pivotAlias = $this->option('pivot_table_alias');
         $pivotJoinContext = $pivotAlias?
@@ -123,7 +123,7 @@ class JoinMorphToMany extends JoinRelationship
      */
     public function getModelClass() : string
     {
-        return get_class($this->from());
+        return morph_model_alias($this->from())? : get_class($this->from());
     }
 
     public function getPivotTableQualifiedField(string $field) : string

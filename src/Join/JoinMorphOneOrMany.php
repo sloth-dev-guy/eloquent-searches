@@ -77,7 +77,7 @@ class JoinMorphOneOrMany extends JoinRelationship
      */
     public function getModelClass() : string
     {
-        return get_class($this->from());
+        return morph_model_alias($this->from())? : get_class($this->from());
     }
 
     /**

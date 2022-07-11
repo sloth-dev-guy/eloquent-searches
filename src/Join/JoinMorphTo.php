@@ -79,7 +79,7 @@ class JoinMorphTo extends JoinRelationship
      */
     public function getModelClass() : string
     {
-        return get_class($this->to());
+        return morph_model_alias($this->to())? : get_class($this->to());
     }
 
     /**

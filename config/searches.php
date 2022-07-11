@@ -2,6 +2,6 @@
 
 return [
     'morphs' => [
-        'with_class_basename' => env('MORPHS_WITH_CLASS_BASENAME', false),
+        'build_default_aliases' =>  env('SEARCH_BUILD_DEFAULT_MORPH_ALIASES', false),
     ],
 ];
