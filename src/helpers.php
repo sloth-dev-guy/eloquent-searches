@@ -3,6 +3,8 @@
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Str;
+use SlothDevGuy\Searches\Search;
+use SlothDevGuy\Searches\Searcher;
 
 if(!function_exists('morph_model_alias')){
     /**
@@ -27,5 +29,18 @@ if(!function_exists('morph_model_alias')){
         }
 
         return null;
+    }
+}
+
+if(!function_exists('eloquent_search')){
+    /**
+     * @param Model|string $from
+     * @param mixed $conditions
+     * @param array $options
+     * @return Searcher
+     */
+    function eloquent_search(Model|string $from, mixed $conditions, array $options = []) : Searcher
+    {
+        return new Search($from, $conditions, null, $options);
     }
 }
