@@ -41,6 +41,7 @@ class SearchJoinRelationshipBuilder implements SearchBuilder
         'has-one' => JoinHasOneOrMany::class,
         'has-many' => JoinHasOneOrMany::class,
         'has-one-or-many' => JoinHasOneOrMany::class,
+        'morph-to' => JoinMorphTo::class,
         'morph-one-or-many' => JoinMorphOneOrMany::class,
         'morph-one' => JoinMorphOneOrMany::class,
         'morph-many' => JoinMorphOneOrMany::class,
@@ -140,10 +141,18 @@ class SearchJoinRelationshipBuilder implements SearchBuilder
 
         $relation = $relation ? : $arguments->shift();
 
+        @list($relation, $relationArguments) = explode(':', $relation);
         @list($relation, $alias) = explode('@', $relation);
 
         $this->options['relation'] = $relation;
         $this->options['alias'] = $alias;
+
+        if(!is_null($relationArguments)){
+            $relationArguments = collect(explode(',', $relationArguments))
+                ->map('trim')
+                ->filter()
+                ->toArray();
+        }
 
         $this->arguments = $arguments->map(function ($argument){
             if (in_array($argument, static::$supportedJoins)) {
@@ -178,6 +187,7 @@ class SearchJoinRelationshipBuilder implements SearchBuilder
                     'method' => $this->options['method'],
                     'from_table_alias' => $this->search()->option('from_alias'),
                     'to_table_alias' => $alias? : null,
+                    'relation_arguments' => $relationArguments,
                 ]);
             }
 

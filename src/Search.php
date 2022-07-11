@@ -111,7 +111,7 @@ class Search implements Searcher
             $builder->take($max);
             $this->pagination['max'] = $max;
             $page = $page ?? request()->query('page', 1);
-º
+
             if($page > 0){
                 $builder->offset(($page - 1) * $max);
                 $this->pagination['page'] = $page;

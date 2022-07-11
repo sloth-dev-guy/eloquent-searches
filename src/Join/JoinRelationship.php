@@ -38,6 +38,7 @@ abstract class JoinRelationship implements JoinRelationshipBuilder
             'join_operator' => '=',
             'from_table_alias' => null,
             'to_table_alias' => null,
+            'relation_arguments' => [],
         ], $options);
     }
 

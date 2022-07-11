@@ -39,4 +39,9 @@ trait WithDB
 
         $schema->up($schema->getBuilder($this->connection()));
     }
+
+    protected function loadTestModels()
+    {
+        require_once __DIR__ . '/database/models.test';
+    }
 }

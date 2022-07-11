@@ -3,6 +3,7 @@
 namespace Tests\Joins;
 
 use SlothDevGuy\Searches\Join\JoinMorphOneOrMany;
+use SlothDevGuy\Searches\Join\JoinMorphTo;
 use SlothDevGuy\Searches\Join\SearchJoinRelationshipBuilder;
 use Tests\database\Attachment;
 use Tests\database\Comment;
@@ -119,7 +120,7 @@ class MorphOneOrManyTest extends TestCase
             $joinContext = $alias? : $joinData['table'];
 
             $this->assertJoinBuilder($joinBuilder, [
-                'join_instance_of' => JoinMorphOneOrMany::class,
+                'join_instance_of' => JoinMorphTo::class,
                 'related_instance_of' => $joinData['model'],
                 'method' => $joinType? data_get(static::$supportedJoins, $joinType, 'join') : 'join',
                 'arguments' => [
@@ -135,15 +136,16 @@ class MorphOneOrManyTest extends TestCase
             /** @var JoinMorphOneOrMany $join */
             $join = $joinBuilder->join();
 
-            $first = "{$from['table']}.id";
+            $first = "{$joinContext}.id";
             $operator = '=';
-            $second = "{$joinContext}.{$joinData['foreign_key']}";
+            $second = "{$from['table']}.{$joinData['foreign_key']}";
 
-            $on = compact('first', 'operator', 'second');
-            $this->assertEquals($on, $join->on());
+            $expectedOn = compact('first', 'operator', 'second');
+            $on = $join->on();
+            $this->assertEquals($expectedOn, $on);
 
-            $first = "{$joinContext}.{$joinData['foreign_type']}";
-            $second = get_class($from['model']);
+            $first = "{$from['table']}.{$joinData['foreign_type']}";
+            $second = $joinData['model'];
 
             $where = compact('first', 'operator', 'second');
             $this->assertEquals($where, collect($join->wheres())->first());

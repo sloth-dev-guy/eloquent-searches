@@ -49,6 +49,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
+        $builder->dropIfExists('taggable');
         $builder->create('taggable', function (Blueprint $table){
             $table->foreignId('tag_id')->constrained('tag');
             $table->morphs('taggable', 'taggable_class');
@@ -66,7 +67,7 @@ return new class extends Migration
         });
 
         $builder->dropIfExists('administrative_division');
-        $builder->create('location', function (Blueprint $table) {
+        $builder->create('administrative_division', function (Blueprint $table) {
             $table->id();
             $table->foreignId('administrative_division_id')->nullable()->constrained('administrative_division');
             $table->foreignId('country_id')->constrained('country');
@@ -127,6 +128,7 @@ return new class extends Migration
             $table->foreignId('author_id')->constrained('persons');
             $table->foreignId('task_id')->constrained();
             $table->longText('body');
+            $table->unsignedInteger('likes')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });
