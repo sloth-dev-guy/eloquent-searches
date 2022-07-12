@@ -64,6 +64,9 @@ class Search implements Searcher
         $this->builder = $builder ?? $this->from()->newQuery();
 
         $this->select($this->option('select', $this->getFromQualifiedField('*')));
+
+        $this->pagination['max'] = $this->option('max', request()->query('max'));
+        $this->pagination['page'] = $this->option('page', request()->query('page'));
     }
 
     /**
@@ -99,22 +102,20 @@ class Search implements Searcher
      *
      * @return Builder[]|Collection
      */
-    public function get(int $max = null, int $page = null)
+    public function get()
     {
         $builder = $this->builder()->clone();
 
         $builder->select($this->select());
 
-        $max = $max ?? request()->query('max');
+        $max = $this->pagination['max'];
 
         if($max > 0){
             $builder->take($max);
-            $this->pagination['max'] = $max;
-            $page = $page ?? request()->query('page', 1);
+            $page = $this->pagination['page'];
 
             if($page > 0){
                 $builder->offset(($page - 1) * $max);
-                $this->pagination['page'] = $page;
             }
         }
 
@@ -145,6 +146,10 @@ class Search implements Searcher
      */
     public function pagination() : array
     {
+        if(is_null($this->pagination['total'])){
+            $this->count();
+        }
+
         return $this->pagination;
     }
 

@@ -28,11 +28,9 @@ interface Searcher
     public function select($select = null);
 
     /**
-     * @param int|null $max
-     * @param int|null $page
      * @return mixed
      */
-    public function get(int $max = null, int $page = null);
+    public function get();
 
     /**
      * @param int $max
