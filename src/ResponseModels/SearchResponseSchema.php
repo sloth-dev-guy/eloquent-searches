@@ -2,15 +2,15 @@
 
 namespace SlothDevGuy\Searches\ResponseModels;
 
-use SlothDevGuy\Searches\Interfaces\ItemResponseInterface;
-use SlothDevGuy\Searches\Interfaces\SearchResponseInterfaces;
+use SlothDevGuy\Searches\Interfaces\ItemResponseSchemaInterface;
+use SlothDevGuy\Searches\Interfaces\SearchResponseSchemaInterface;
 use SlothDevGuy\Searches\Searcher;
 
 /**
  * Class SearchResponse
  * @package SlothDevGuy\Searches\ResponseModels
  */
-class SearchResponse implements SearchResponseInterfaces
+class SearchResponseSchema implements SearchResponseSchemaInterface
 {
     /**
      * @var bool
@@ -24,11 +24,11 @@ class SearchResponse implements SearchResponseInterfaces
 
     /**
      * @param Searcher $search
-     * @param ItemResponseInterface $itemResponse
+     * @param ItemResponseSchemaInterface $itemResponse
      */
     public function __construct(
         protected Searcher $search,
-        protected ItemResponseInterface $itemResponse
+        protected ItemResponseSchemaInterface $itemResponse
     )
     {
 
@@ -49,7 +49,7 @@ class SearchResponse implements SearchResponseInterfaces
     {
         if(empty($this->map)){
             $this->map = collect($this->search()->get())
-                ->each($this->itemResponse::mapEach())
+                ->map($this->itemResponse::mapEach())
                 ->toArray();
         }
 
@@ -58,9 +58,9 @@ class SearchResponse implements SearchResponseInterfaces
 
     /**
      * @param bool $force
-     * @return SearchResponseInterfaces
+     * @return SearchResponseSchemaInterface
      */
-    public function forcePaginationResponse(bool $force = true): SearchResponseInterfaces
+    public function forcePaginationResponse(bool $force = true): SearchResponseSchemaInterface
     {
         $this->forcePagination = $force;
 
@@ -68,10 +68,10 @@ class SearchResponse implements SearchResponseInterfaces
     }
 
     /**
-     * @param ItemResponseInterface $itemResponse
-     * @return SearchResponseInterfaces
+     * @param ItemResponseSchemaInterface $itemResponse
+     * @return SearchResponseSchemaInterface
      */
-    public function setItemResponse(ItemResponseInterface $itemResponse): SearchResponseInterfaces
+    public function setItemResponse(ItemResponseSchemaInterface $itemResponse): SearchResponseSchemaInterface
     {
         $this->itemResponse = $itemResponse;
 
@@ -130,10 +130,10 @@ class SearchResponse implements SearchResponseInterfaces
 
     /**
      * @param Searcher $search
-     * @return SearchResponseInterfaces
+     * @return SearchResponseSchemaInterface
      */
-    public static function builtFromSearch(Searcher $search): SearchResponseInterfaces
+    public static function fromSearch(Searcher $search): SearchResponseSchemaInterface
     {
-        return new static($search, new ItemResponse());
+        return new static($search, new ItemResponseSchema());
     }
 }
