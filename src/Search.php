@@ -24,6 +24,11 @@ class Search implements Searcher
     protected Builder $builder;
 
     /**
+     * @var \Illuminate\Support\Collection|SearchBuilder[]
+     */
+    protected $conditions;
+
+    /**
      * @var null
      */
     protected $select = null;
@@ -48,17 +53,18 @@ class Search implements Searcher
 
     /**
      * @param Model $from
-     * @param mixed $conditions
+     * @param mixed $rawConditions
      * @param Builder|null $builder
      * @param array $options
      */
     public function __construct(
         protected Model $from,
-        protected       $conditions,
+        protected       $rawConditions,
         Builder         $builder = null,
-        array $options = [],
+        array           $options = [],
     )
     {
+        $this->conditions = collect();
         $this->options = static::defaultOptions($options);
 
         $this->builder = $builder ?? $this->from()->newQuery();
@@ -75,14 +81,6 @@ class Search implements Searcher
     public function from() : Model
     {
         return $this->from;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function conditions()
-    {
-        return $this->conditions;
     }
 
     /**
@@ -104,7 +102,7 @@ class Search implements Searcher
      */
     public function get()
     {
-        $builder = $this->builder()->clone();
+        $builder = $this->builder();
 
         $builder->select($this->select());
 
@@ -128,7 +126,7 @@ class Search implements Searcher
      */
     public function count(bool $reCount = false) : int
     {
-        $builder = $this->builder()->clone();
+        $builder = $this->builder();
 
         if(is_null($this->pagination['total']) || $reCount){
             $this->pagination['total'] = $builder->count();
@@ -159,15 +157,18 @@ class Search implements Searcher
     public function builder() : Builder
     {
         //id?
-        $conditions = collect($this->conditions);
+        if($this->conditions->isEmpty()) {
+            $this->conditions = collect($this->rawConditions)
+                ->map($this->mapSearchBuilders());
+        }
 
-        $conditions = $conditions->map($this->mapSearchBuilders());
+        $builder = $this->builder->clone();
 
-        //fail if some argument is missing or can't be handled?
+        foreach ($this->conditions as $condition){
+            $builder = $condition->pushInQueryBuilder($builder);
+        }
 
-        $conditions->each(fn(SearchBuilder $searchBuilder) => $searchBuilder->pushInQueryBuilder($this->builder));
-
-        return $this->builder;
+        return $builder;
     }
 
     /**

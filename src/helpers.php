@@ -44,3 +44,18 @@ if(!function_exists('eloquent_search')){
         return new Search($from, $conditions, null, $options);
     }
 }
+
+if (! function_exists('warning')) {
+    /**
+     * Write some information to the log.
+     *
+     * @param  string  $message
+     * @param  array  $context
+     * @return void
+     */
+    function warning($message, $context = [])
+    {
+        return app('Psr\Log\LoggerInterface')->warning($message, $context);
+    }
+}
+

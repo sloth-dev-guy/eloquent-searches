@@ -17,11 +17,6 @@ interface Searcher
     public function from() : Model;
 
     /**
-     * @return mixed
-     */
-    public function conditions();
-
-    /**
      * @param $select
      * @return mixed
      */

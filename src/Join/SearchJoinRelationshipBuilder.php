@@ -167,8 +167,14 @@ class SearchJoinRelationshipBuilder implements SearchBuilder
         try{
             $from = $this->search()->from();
 
-            if (!method_exists($from, $relation))
+            $camelRelation = Str::camel($relation);
+            if(method_exists($from, $camelRelation)){
+                $relation = $camelRelation;
+            }
+
+            if (!method_exists($from, $relation)) {
                 return $this;
+            }
 
             $relationship = call_user_func_array([$from, $relation], []);
 
