@@ -71,8 +71,8 @@ class Search implements Searcher
 
         $this->select($this->option('select', $this->getFromQualifiedField('*')));
 
-        $this->pagination['max'] = $this->option('max', request()->query('max'));
-        $this->pagination['page'] = $this->option('page', request()->query('page'));
+        $this->pagination['max'] = $this->option('max');
+        $this->pagination['page'] = $this->option('page');
     }
 
     /**
@@ -97,6 +97,20 @@ class Search implements Searcher
     }
 
     /**
+     * @inheritdoc
+     * @param bool|null $distinct
+     * @return bool
+     */
+    public function distinct(bool $distinct = null) : bool
+    {
+        if(!is_null($distinct)){
+            $this->options['distinct'] = $distinct;
+        }
+
+        return $this->option('distinct', false);
+    }
+
+    /**
      *
      * @return Builder[]|Collection
      */
@@ -105,6 +119,8 @@ class Search implements Searcher
         $builder = $this->builder();
 
         $builder->select($this->select());
+
+        $this->distinct() && $builder->distinct();
 
         $max = $this->pagination['max'];
 
@@ -181,21 +197,6 @@ class Search implements Searcher
     }
 
     /**
-     * @param string $field
-     * @param string $table
-     * @param string|null $alias
-     * @return string
-     */
-    public static function getQualifiedField(string $field, string $table, string $alias = null): string
-    {
-        $alias = $alias? : $table;
-
-        return str_contains($field, '.')?
-            $field :
-            "{$alias}.{$field}";
-    }
-
-    /**
      * @return Closure
      */
     protected function mapSearchBuilders()
@@ -219,5 +220,33 @@ class Search implements Searcher
 
             return $builder;
         };
+    }
+
+    /**
+     * @param string $field
+     * @param string $table
+     * @param string|null $alias
+     * @return string
+     */
+    public static function getQualifiedField(string $field, string $table, string $alias = null): string
+    {
+        $alias = $alias? : $table;
+
+        return str_contains($field, '.')?
+            $field :
+            "{$alias}.{$field}";
+    }
+
+    /**
+     * @param array $options
+     * @return array
+     */
+    public static function defaultOptions(array $options = []): array
+    {
+        return array_merge([
+            'distinct' => (bool) request()->query('distinct', false),
+            'max' => request()->query('max'),
+            'page' => request()->query('page'),
+        ], $options);
     }
 }

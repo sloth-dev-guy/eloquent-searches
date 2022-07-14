@@ -23,6 +23,12 @@ interface Searcher
     public function select($select = null);
 
     /**
+     * @param bool $distinct
+     * @return mixed
+     */
+    public function distinct(bool $distinct = null) : bool;
+
+    /**
      * @return mixed
      */
     public function get();
