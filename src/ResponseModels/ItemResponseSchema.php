@@ -38,10 +38,16 @@ class ItemResponseSchema implements ItemResponseSchemaInterface
     }
 
     /**
+     * @param mixed $item
      * @return Model
      */
-    public function item()
+    public function item($item = null)
     {
+        if(!is_null($item)){
+            $this->item = $item;
+            $this->map = [];
+        }
+
         return $this->item;
     }
 

@@ -14,9 +14,10 @@ use Illuminate\Database\Eloquent\Model;
 interface ItemResponseSchemaInterface extends Jsonable, Arrayable
 {
     /**
+     * @param mixed $item
      * @return mixed
      */
-    public function item();
+    public function item($item = null);
 
     /**
      * @return array

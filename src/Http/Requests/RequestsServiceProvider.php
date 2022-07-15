@@ -15,8 +15,14 @@ class RequestsServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        $this->app->resolving(SearchRequest::class, fn($request, $app) => SearchRequest::createFrom($app['request'], $request));
+        $this->app->resolving(
+            Request::class,
+            fn($request, $app) => $request::createFrom($app['request'], $request)
+        );
 
-        $this->app->afterResolving(SearchRequest::class, fn(SearchRequest $request) => $request->validate());
+        $this->app->afterResolving(
+            Request::class,
+            fn(Request $request) => $request->validate()
+        );
     }
 }
