@@ -118,10 +118,91 @@ class Search implements Searcher
     {
         $builder = $this->builder();
 
+        $this->selectIn($builder);
+
+        $this->distinctIn($builder);
+
+        //$this->aggregateIn($builder);
+
+        $this->orderByIn($builder);
+
+        //$this->groupByIn($builder);
+
+        //$this->havingIn($builder);
+
+        $this->paginateIn($builder);
+
+        return $builder->get();
+    }
+
+    /**
+     * @param Builder $builder
+     * @return Builder
+     */
+    protected function selectIn(Builder $builder)
+    {
         $builder->select($this->select());
 
+        return $builder;
+    }
+
+    /**
+     * @param Builder $builder
+     * @return Builder
+     */
+    protected function distinctIn(Builder $builder)
+    {
         $this->distinct() && $builder->distinct();
 
+        return $builder;
+    }
+
+    /**
+     * @param Builder $builder
+     * @return Builder
+     */
+    protected function aggregateIn(Builder $builder)
+    {
+        return $builder;
+    }
+
+    /**
+     * @param Builder $builder
+     * @return Builder
+     */
+    protected function orderByIn(Builder $builder)
+    {
+        collect($this->option('order'))
+            ->filter()
+            ->each(fn($order) => $builder->orderBy(...explode(',', $order)));
+
+        return $builder;
+    }
+
+    /**
+     * @param Builder $builder
+     * @return Builder
+     */
+    protected function groupByIn(Builder $builder)
+    {
+        return $builder;
+    }
+
+    /**
+     * @param Builder $builder
+     * @return Builder
+     */
+    protected function havingIn(Builder $builder)
+    {
+        return $builder;
+    }
+
+    /**
+     * @param Builder $builder
+     * @return Builder
+     */
+    protected function paginateIn(Builder $builder)
+    {
         $max = $this->pagination['max'];
 
         if($max > 0){
@@ -133,7 +214,7 @@ class Search implements Searcher
             }
         }
 
-        return $builder->get();
+        return $builder;
     }
 
     /**
@@ -193,6 +274,10 @@ class Search implements Searcher
      */
     public function getFromQualifiedField(string $field): string
     {
+        if(!$this->option('qualified_fields', true)){
+            return $field;
+        }
+
         return static::getQualifiedField($field, $this->from()->getTable(), $this->option('from_alias'));
     }
 
@@ -247,6 +332,7 @@ class Search implements Searcher
             'distinct' => (bool) request()->query('distinct', false),
             'max' => request()->query('max'),
             'page' => request()->query('page'),
+            'order' => request()->query('order'),
         ], $options);
     }
 }

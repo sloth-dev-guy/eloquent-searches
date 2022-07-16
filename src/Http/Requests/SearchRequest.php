@@ -15,7 +15,15 @@ class SearchRequest extends Request
      */
     public function all($keys = null)
     {
-        return collect(parent::all($keys))->except(['page', 'max', 'distinct'])
+        return collect(parent::all($keys))->except(static::reservedKeys())
             ->toArray();
+    }
+
+    /**
+     * @return string[]
+     */
+    public static function reservedKeys() : array
+    {
+        return ['page', 'max', 'distinct', 'order'];
     }
 }
