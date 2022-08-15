@@ -17,22 +17,21 @@ interface Searcher
     public function from() : Model;
 
     /**
-     * @return mixed
-     */
-    public function conditions();
-
-    /**
      * @param $select
      * @return mixed
      */
     public function select($select = null);
 
     /**
-     * @param int|null $max
-     * @param int|null $page
+     * @param bool $distinct
      * @return mixed
      */
-    public function get(int $max = null, int $page = null);
+    public function distinct(bool $distinct = null) : bool;
+
+    /**
+     * @return mixed
+     */
+    public function get();
 
     /**
      * @param int $max

@@ -47,7 +47,8 @@
         }
     },
     "suggest": {
-        "laravel/lumen-framework": "Required to use defaults functionalities inherit to the laravel frameworks (laravel|lumen) (^9.0)"
+        "laravel/lumen-framework": "Required to use defaults functionalities inherit to the laravel frameworks (laravel|lumen) (^9.0)",
+        "illuminate/http": "Required to use custom requests object in controllers (^9.0)"
     },
     "extra": {
         "laravel": {

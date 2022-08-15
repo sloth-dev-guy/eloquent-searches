@@ -3,6 +3,7 @@
 namespace Tests;
 
 use SlothDevGuy\Searches\Search;
+use Tests\database\Location;
 use Tests\database\Person;
 
 class SearchTest extends TestCase
@@ -73,5 +74,45 @@ class SearchTest extends TestCase
         ];
         foreach ($wheres as $where)
             $this->assertContains($where, $bindings);
+    }
+
+    public function testJoinAndPagination()
+    {
+        $this->loadTestModels();
+        $this->migrate();
+
+        $search = new Search(new Person(), [
+            'tasks' => [
+                'comments' => [
+                    'likes|>' => 5,
+                ],
+            ],
+        ], null, [
+            'max' => 1,
+            'page' => 1,
+        ]);
+
+        $pagination = $search->pagination();
+        $this->assertNotNull($search->get());
+
+        $this->assertEquals(1, $pagination['max']);
+        $this->assertEquals(1, $pagination['page']);
+    }
+
+    public function testJoinRelationWithKebabSyntax()
+    {
+        $this->loadTestModels();
+        $this->migrate();
+
+        $search = eloquent_search(new Location(), [
+            'administrative-division' => [
+
+            ]
+        ]);
+
+        $this->assertNotNull($search->get());
+        $sql = $search->builder()->toSql();
+
+        $this->assertStringContainsString('administrative_division', $sql);
     }
 }

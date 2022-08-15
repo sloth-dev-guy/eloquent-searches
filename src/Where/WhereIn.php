@@ -60,6 +60,10 @@ class WhereIn extends BaseWhere
         $field = $this->getQualifiedField($arguments->field());
         $value = (array) $arguments->value();
 
+        empty($value) && warning('where-in with empty values', [
+            'field' => $field,
+        ]);
+
         //pack where method and arguments
         return [
             'method' => $arguments->method(),

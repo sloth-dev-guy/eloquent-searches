@@ -24,6 +24,11 @@ class Search implements Searcher
     protected Builder $builder;
 
     /**
+     * @var \Illuminate\Support\Collection|SearchBuilder[]
+     */
+    protected $conditions;
+
+    /**
      * @var null
      */
     protected $select = null;
@@ -48,22 +53,26 @@ class Search implements Searcher
 
     /**
      * @param Model $from
-     * @param mixed $conditions
+     * @param mixed $rawConditions
      * @param Builder|null $builder
      * @param array $options
      */
     public function __construct(
         protected Model $from,
-        protected       $conditions,
+        protected       $rawConditions,
         Builder         $builder = null,
-        array $options = [],
+        array           $options = [],
     )
     {
+        $this->conditions = collect();
         $this->options = static::defaultOptions($options);
 
         $this->builder = $builder ?? $this->from()->newQuery();
 
         $this->select($this->option('select', $this->getFromQualifiedField('*')));
+
+        $this->pagination['max'] = $this->option('max');
+        $this->pagination['page'] = $this->option('page');
     }
 
     /**
@@ -72,14 +81,6 @@ class Search implements Searcher
     public function from() : Model
     {
         return $this->from;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function conditions()
-    {
-        return $this->conditions;
     }
 
     /**
@@ -96,29 +97,124 @@ class Search implements Searcher
     }
 
     /**
+     * @inheritdoc
+     * @param bool|null $distinct
+     * @return bool
+     */
+    public function distinct(bool $distinct = null) : bool
+    {
+        if(!is_null($distinct)){
+            $this->options['distinct'] = $distinct;
+        }
+
+        return $this->option('distinct', false);
+    }
+
+    /**
      *
      * @return Builder[]|Collection
      */
-    public function get(int $max = null, int $page = null)
+    public function get()
     {
-        $builder = $this->builder()->clone();
+        $builder = $this->builder();
 
+        $this->selectIn($builder);
+
+        $this->distinctIn($builder);
+
+        //$this->aggregateIn($builder);
+
+        $this->orderByIn($builder);
+
+        //$this->groupByIn($builder);
+
+        //$this->havingIn($builder);
+
+        $this->paginateIn($builder);
+
+        return $builder->get();
+    }
+
+    /**
+     * @param Builder $builder
+     * @return Builder
+     */
+    protected function selectIn(Builder $builder)
+    {
         $builder->select($this->select());
 
-        $max = $max ?? request()->query('max');
+        return $builder;
+    }
+
+    /**
+     * @param Builder $builder
+     * @return Builder
+     */
+    protected function distinctIn(Builder $builder)
+    {
+        $this->distinct() && $builder->distinct();
+
+        return $builder;
+    }
+
+    /**
+     * @param Builder $builder
+     * @return Builder
+     */
+    protected function aggregateIn(Builder $builder)
+    {
+        return $builder;
+    }
+
+    /**
+     * @param Builder $builder
+     * @return Builder
+     */
+    protected function orderByIn(Builder $builder)
+    {
+        collect($this->option('order'))
+            ->filter()
+            ->each(fn($order) => $builder->orderBy(...explode(',', $order)));
+
+        return $builder;
+    }
+
+    /**
+     * @param Builder $builder
+     * @return Builder
+     */
+    protected function groupByIn(Builder $builder)
+    {
+        return $builder;
+    }
+
+    /**
+     * @param Builder $builder
+     * @return Builder
+     */
+    protected function havingIn(Builder $builder)
+    {
+        return $builder;
+    }
+
+    /**
+     * @param Builder $builder
+     * @return Builder
+     */
+    protected function paginateIn(Builder $builder)
+    {
+        $max = $this->pagination['max'];
 
         if($max > 0){
             $builder->take($max);
-            $this->pagination['max'] = $max;
-            $page = $page ?? request()->query('page', 1);
+            $page = $this->pagination['page'];
 
             if($page > 0){
                 $builder->offset(($page - 1) * $max);
-                $this->pagination['page'] = $page;
             }
         }
 
-        return $builder->get();
+        return $builder;
     }
 
     /**
@@ -127,7 +223,7 @@ class Search implements Searcher
      */
     public function count(bool $reCount = false) : int
     {
-        $builder = $this->builder()->clone();
+        $builder = $this->builder();
 
         if(is_null($this->pagination['total']) || $reCount){
             $this->pagination['total'] = $builder->count();
@@ -145,6 +241,10 @@ class Search implements Searcher
      */
     public function pagination() : array
     {
+        if(is_null($this->pagination['total'])){
+            $this->count();
+        }
+
         return $this->pagination;
     }
 
@@ -154,15 +254,18 @@ class Search implements Searcher
     public function builder() : Builder
     {
         //id?
-        $conditions = collect($this->conditions);
+        if($this->conditions->isEmpty()) {
+            $this->conditions = collect($this->rawConditions)
+                ->map($this->mapSearchBuilders());
+        }
 
-        $conditions = $conditions->map($this->mapSearchBuilders());
+        $builder = $this->builder->clone();
 
-        //fail if some argument is missing or can't be handled?
+        foreach ($this->conditions as $condition){
+            $builder = $condition->pushInQueryBuilder($builder);
+        }
 
-        $conditions->each(fn(SearchBuilder $searchBuilder) => $searchBuilder->pushInQueryBuilder($this->builder));
-
-        return $this->builder;
+        return $builder;
     }
 
     /**
@@ -171,22 +274,11 @@ class Search implements Searcher
      */
     public function getFromQualifiedField(string $field): string
     {
+        if(!$this->option('qualified_fields', true)){
+            return $field;
+        }
+
         return static::getQualifiedField($field, $this->from()->getTable(), $this->option('from_alias'));
-    }
-
-    /**
-     * @param string $field
-     * @param string $table
-     * @param string|null $alias
-     * @return string
-     */
-    public static function getQualifiedField(string $field, string $table, string $alias = null): string
-    {
-        $alias = $alias? : $table;
-
-        return str_contains($field, '.')?
-            $field :
-            "{$alias}.{$field}";
     }
 
     /**
@@ -213,5 +305,34 @@ class Search implements Searcher
 
             return $builder;
         };
+    }
+
+    /**
+     * @param string $field
+     * @param string $table
+     * @param string|null $alias
+     * @return string
+     */
+    public static function getQualifiedField(string $field, string $table, string $alias = null): string
+    {
+        $alias = $alias? : $table;
+
+        return str_contains($field, '.')?
+            $field :
+            "{$alias}.{$field}";
+    }
+
+    /**
+     * @param array $options
+     * @return array
+     */
+    public static function defaultOptions(array $options = []): array
+    {
+        return array_merge([
+            'distinct' => (bool) request()->query('distinct', false),
+            'max' => request()->query('max'),
+            'page' => request()->query('page'),
+            'order' => request()->query('order'),
+        ], $options);
     }
 }

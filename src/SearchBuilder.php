@@ -21,7 +21,7 @@ interface SearchBuilder
 
     /**
      * @param Builder $builder
-     * @return mixed
+     * @return Builder
      */
     public function pushInQueryBuilder(Builder $builder) : Builder;
 }
