@@ -1,6 +1,6 @@
 ## Eloquent Searches
 
-Are you tired of write if, where's and joins for each field in your search method or classes, then this might be a solution for you!
+Are you tired of write __if, where and join statements in all your search methods__ as if tomorrow never comes, then this might be a solution for you!
 
 Perform searches with Eloquent models using an array-like API setup.
 
