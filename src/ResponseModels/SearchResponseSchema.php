@@ -110,7 +110,9 @@ class SearchResponseSchema implements SearchResponseSchemaInterface
 
         foreach ($pagination as $key => $value){
             $newKey = config("searches.responses.pagination_keys.{$key}", $key);
-            $mapWithPagination[$newKey] = $value;
+
+            //all pagination values should be integer values
+            $mapWithPagination[$newKey] = (int) $value;
         }
 
         $itemKey = config('searches.responses.pagination_keys.items', 'items');
