@@ -34,6 +34,11 @@ class Search implements Searcher
     protected $select = null;
 
     /**
+     * @var Builder
+     */
+    protected Builder $lastBuilder;
+
+    /**
      * @var array|int[]
      */
     protected array $pagination = [
@@ -59,7 +64,7 @@ class Search implements Searcher
      */
     public function __construct(
         protected Model $from,
-        protected       $rawConditions,
+        protected mixed $rawConditions,
         Builder         $builder = null,
         array           $options = [],
     )
@@ -131,6 +136,8 @@ class Search implements Searcher
         //$this->havingIn($builder);
 
         $this->paginateIn($builder);
+
+        $this->lastBuilder = $builder;
 
         return $builder->get();
     }
@@ -334,5 +341,13 @@ class Search implements Searcher
             'page' => request()->query('page'),
             'order' => request()->query('order'),
         ], $options);
+    }
+
+    /**
+     * @return Builder
+     */
+    public function getLastBuilder(): Builder
+    {
+        return $this->lastBuilder;
     }
 }
