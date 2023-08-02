@@ -45,13 +45,15 @@ class SearchWhereBuilder implements SearchBuilder
     protected function __construct(
         protected Searcher $searcher,
         protected string   $fieldWithArguments,
-                           $values,
+        mixed              $values,
         array              $options = [],
     )
     {
         $this->arguments = new WhereArguments($this->fieldWithArguments, $values, $options);
 
         $this->pickWhereBuilder();
+
+        $this->setValuesInWhere($this->castValuesIfFieldRequires($values));
     }
 
     /**
@@ -75,7 +77,7 @@ class SearchWhereBuilder implements SearchBuilder
     /**
      * @return $this
      */
-    protected function pickWhereBuilder()
+    protected function pickWhereBuilder(): static
     {
         $method = $this->arguments()->method();
 
@@ -103,6 +105,54 @@ class SearchWhereBuilder implements SearchBuilder
         }
 
         return $this->where()->pushInBuilder($builder);
+    }
+
+    /**
+     * @param mixed $values
+     * @return mixed
+     */
+    public function castValuesIfFieldRequires(mixed $values): mixed
+    {
+        if(!isset($this->where)){
+            return null;
+        }
+
+        $arguments = $this->where->arguments();
+        if(!$arguments->option('cast')){
+            return null;
+        }
+
+        $field = $arguments->option('cast') === true? $arguments->field() : $arguments->option('cast.0');
+        $from = $this->searcher()->from();
+        $model = new $from;
+
+        if(is_string($values)){
+            $model->setAttribute($field, $values);
+            $castValue = $model->getAttributeValue($field);
+
+            if(is_object($castValue) && method_exists($castValue, 'cast')){
+                $castValue = $castValue->cast();
+            }
+
+            return $castValue;
+        }
+
+        if(is_array($values)){
+            return array_map(fn($value) => $this->castValuesIfFieldRequires($value), $values);
+        }
+
+        return $values;
+    }
+
+    /**
+     * @param mixed $values
+     * @return void
+     */
+    protected function setValuesInWhere(mixed $values): void
+    {
+        if(!is_null($values) && isset($this->where)){
+            $this->where->arguments()->value($values);
+        }
     }
 
     /**
