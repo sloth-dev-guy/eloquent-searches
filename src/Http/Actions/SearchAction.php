@@ -2,7 +2,7 @@
 
 namespace SlothDevGuy\Searches\Http\Actions;
 
-use CTDesarrollo\PerformanceMonitor\Models\Model;
+use Illuminate\Database\Eloquent\Model;
 use SlothDevGuy\Searches\Http\Requests\SearchRequest;
 use SlothDevGuy\Searches\Interfaces\ItemResponseSchemaInterface as ItemResponse;
 use SlothDevGuy\Searches\Interfaces\SearchResponseSchemaInterface as SearchResponse;

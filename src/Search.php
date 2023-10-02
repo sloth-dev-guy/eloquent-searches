@@ -21,6 +21,11 @@ class Search implements Searcher
     /**
      * @var Builder
      */
+    protected Builder $fromBuilder;
+
+    /**
+     * @var Builder
+     */
     protected Builder $builder;
 
     /**
@@ -72,7 +77,7 @@ class Search implements Searcher
         $this->conditions = collect();
         $this->options = static::defaultOptions($options);
 
-        $this->builder = $builder ?? $this->from()->newQuery();
+        $this->fromBuilder = $builder ?? $this->from()->newQuery();
 
         $this->select($this->option('select', $this->getFromQualifiedField('*')));
 
@@ -260,19 +265,25 @@ class Search implements Searcher
      */
     public function builder() : Builder
     {
-        //id?
-        if($this->conditions->isEmpty()) {
-            $this->conditions = collect($this->rawConditions)
-                ->map($this->mapSearchBuilders());
+        //@note: to prevent double condition evaluations witch can provoke a double negation error
+        //we only evaluate the conditions once
+        if(!isset($this->builder)){
+            //id?
+            if($this->conditions->isEmpty()) {
+                $this->conditions = collect($this->rawConditions)
+                    ->map($this->mapSearchBuilders());
+            }
+
+            $builder = $this->fromBuilder->clone();
+
+            foreach ($this->conditions as $condition){
+                $builder = $condition->pushInQueryBuilder($builder);
+            }
+
+            $this->builder = $builder;
         }
 
-        $builder = $this->builder->clone();
-
-        foreach ($this->conditions as $condition){
-            $builder = $condition->pushInQueryBuilder($builder);
-        }
-
-        return $builder;
+        return $this->builder;
     }
 
     /**
