@@ -37,10 +37,26 @@ class SearchRequest extends Request
     }
 
     /**
+     * @return array
+     */
+    public function group(): array
+    {
+        $group = $this->query('group');
+
+        if(empty($group)){
+            return [];
+        }
+
+        return is_string($group)?
+            array_filter(array_map(explode(',', $group))) :
+            $group;
+    }
+
+    /**
      * @return string[]
      */
     public static function reservedKeys() : array
     {
-        return ['page', 'max', 'distinct', 'order'];
+        return ['page', 'max', 'distinct', 'order', 'group'];
     }
 }

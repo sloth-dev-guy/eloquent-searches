@@ -46,6 +46,8 @@ class SearchAction
         array $options = [],
     )
     {
+        $options['group'] = $this->request->group();
+
         $this->options(array_merge($this->options, $options));
     }
 
@@ -62,6 +64,36 @@ class SearchAction
         return $this->options;
     }
 
+    /**
+     * Set the distinct flag
+     *
+     * @param bool $flag
+     * @return bool
+     */
+    public function distinct(bool $flag = true): bool
+    {
+        data_set($this->options, 'distinct', $flag);
+
+        return data_get($this->options, 'distinct');
+    }
+
+    /**
+     * Add a group field
+     *
+     * @param string $field
+     * @return array
+     */
+    public function group(string $field): array
+    {
+        $groups = data_get($this->options, 'group');
+
+        $groups[] = $field;
+
+        data_set($this->options, 'group', $groups);
+
+        return $groups;
+    }
+    
     /**
      * Returns the request object
      *

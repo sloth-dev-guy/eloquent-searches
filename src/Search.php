@@ -136,7 +136,7 @@ class Search implements Searcher
 
         $this->orderByIn($builder);
 
-        //$this->groupByIn($builder);
+        $this->groupByIn($builder);
 
         //$this->havingIn($builder);
 
@@ -197,6 +197,10 @@ class Search implements Searcher
      */
     protected function groupByIn(Builder $builder)
     {
+        $groups = array_filter(array_map('trim', (array) $this->option('group')));
+
+        $builder->groupBy(...$groups);
+
         return $builder;
     }
 
@@ -346,11 +350,13 @@ class Search implements Searcher
      */
     public static function defaultOptions(array $options = []): array
     {
+        //@todo options must be injected from the action through the request
         return array_merge([
             'distinct' => (bool) request()->query('distinct', false),
             'max' => request()->query('max'),
             'page' => request()->query('page'),
             'order' => request()->query('order'),
+            'group' => request()->query('group'),
         ], $options);
     }
 
