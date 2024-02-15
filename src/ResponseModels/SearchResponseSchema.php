@@ -43,20 +43,6 @@ class SearchResponseSchema implements SearchResponseSchemaInterface
     }
 
     /**
-     * @return array
-     */
-    public function map(): array
-    {
-        if(empty($this->map)){
-            $this->map = collect($this->search()->get())
-                ->map($this->itemResponse::mapEach())
-                ->toArray();
-        }
-
-        return $this->map;
-    }
-
-    /**
      * @param bool $force
      * @return SearchResponseSchemaInterface
      */
@@ -97,6 +83,20 @@ class SearchResponseSchema implements SearchResponseSchemaInterface
         $page = data_get($pagination, 'page');
 
         return $page > 0 || $this->forcePagination;
+    }
+
+    /**
+     * @return array
+     */
+    public function map(callable $mapper = null): array
+    {
+        if(empty($this->map)){
+            $this->map = collect($this->search()->get())
+                ->map($mapper? : $this->itemResponse::mapEach())
+                ->toArray();
+        }
+
+        return $this->map;
     }
 
     /**
