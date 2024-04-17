@@ -56,7 +56,9 @@ class WhereNest extends BaseWhere
 
             $searcher = new $searcher($searcher->from(), $values, $query, $searcher->options());
 
-            return $searcher->builder();
+            $query->setQuery($builder = $searcher->builder()->getQuery());
+
+            return $builder;
         };
 
         //if a negated method is present a closure must be offered
