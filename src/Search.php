@@ -21,6 +21,11 @@ class Search implements Searcher
     /**
      * @var Builder
      */
+    protected Builder $fromBuilder;
+
+    /**
+     * @var Builder
+     */
     protected Builder $builder;
 
     /**
@@ -32,6 +37,11 @@ class Search implements Searcher
      * @var null
      */
     protected $select = null;
+
+    /**
+     * @var Builder
+     */
+    protected Builder $lastBuilder;
 
     /**
      * @var array|int[]
@@ -59,7 +69,7 @@ class Search implements Searcher
      */
     public function __construct(
         protected Model $from,
-        protected       $rawConditions,
+        protected mixed $rawConditions,
         Builder         $builder = null,
         array           $options = [],
     )
@@ -67,7 +77,7 @@ class Search implements Searcher
         $this->conditions = collect();
         $this->options = static::defaultOptions($options);
 
-        $this->builder = $builder ?? $this->from()->newQuery();
+        $this->fromBuilder = $builder ?? $this->from()->newQuery();
 
         $this->select($this->option('select', $this->getFromQualifiedField('*')));
 
@@ -126,11 +136,13 @@ class Search implements Searcher
 
         $this->orderByIn($builder);
 
-        //$this->groupByIn($builder);
+        $this->groupByIn($builder);
 
         //$this->havingIn($builder);
 
         $this->paginateIn($builder);
+
+        $this->lastBuilder = $builder;
 
         return $builder->get();
     }
@@ -185,6 +197,10 @@ class Search implements Searcher
      */
     protected function groupByIn(Builder $builder)
     {
+        $groups = array_filter(array_map('trim', (array) $this->option('group')));
+
+        $builder->groupBy(...$groups);
+
         return $builder;
     }
 
@@ -253,19 +269,25 @@ class Search implements Searcher
      */
     public function builder() : Builder
     {
-        //id?
-        if($this->conditions->isEmpty()) {
-            $this->conditions = collect($this->rawConditions)
-                ->map($this->mapSearchBuilders());
+        //@note: to prevent double condition evaluations witch can provoke a double negation error
+        //we only evaluate the conditions once
+        if(!isset($this->builder)){
+            //id?
+            if($this->conditions->isEmpty()) {
+                $this->conditions = collect($this->rawConditions)
+                    ->map($this->mapSearchBuilders());
+            }
+
+            $builder = $this->fromBuilder->clone();
+
+            foreach ($this->conditions as $condition){
+                $builder = $condition->pushInQueryBuilder($builder);
+            }
+
+            $this->builder = $builder;
         }
 
-        $builder = $this->builder->clone();
-
-        foreach ($this->conditions as $condition){
-            $builder = $condition->pushInQueryBuilder($builder);
-        }
-
-        return $builder;
+        return $this->builder;
     }
 
     /**
@@ -328,11 +350,21 @@ class Search implements Searcher
      */
     public static function defaultOptions(array $options = []): array
     {
+        //@todo options must be injected from the action through the request
         return array_merge([
             'distinct' => (bool) request()->query('distinct', false),
             'max' => request()->query('max'),
             'page' => request()->query('page'),
             'order' => request()->query('order'),
+            'group' => request()->query('group'),
         ], $options);
+    }
+
+    /**
+     * @return Builder
+     */
+    public function getLastBuilder(): Builder
+    {
+        return $this->lastBuilder;
     }
 }

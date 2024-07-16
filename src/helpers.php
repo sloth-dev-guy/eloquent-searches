@@ -22,7 +22,7 @@ if(!function_exists('morph_model_alias')){
         $index = array_search($model, $map, $strict);
 
         if($index !== false)
-            return $map[$index];
+            return $index;
 
         if(config('searches.morphs.build_default_aliases')){
             return Str::kebab(class_basename($model));

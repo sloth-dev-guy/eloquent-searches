@@ -29,6 +29,8 @@ interface Searcher
     public function distinct(bool $distinct = null) : bool;
 
     /**
+     * Returns a Collection with the results
+     *
      * @return mixed
      */
     public function get();
@@ -55,6 +57,13 @@ interface Searcher
      * @return Builder
      */
     public function builder() : Builder;
+
+    /**
+     * Returns the last used builder for the get method
+     *
+     * @return Builder
+     */
+    public function getLastBuilder(): Builder;
 
     /**
      * @param string $field

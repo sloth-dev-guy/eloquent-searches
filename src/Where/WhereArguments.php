@@ -48,7 +48,7 @@ class WhereArguments implements Arrayable
      */
     public function __construct(
         protected string $fieldWithArguments,
-        protected $value,
+        protected mixed $value,
         array  $options = []
     )
     {
