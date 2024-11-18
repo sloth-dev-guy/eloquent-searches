@@ -92,6 +92,7 @@ class SearchTest extends TestCase
             'page' => 1,
         ]);
 
+        $search->get();
         $pagination = $search->pagination();
         $this->assertNotNull($search->get());
 

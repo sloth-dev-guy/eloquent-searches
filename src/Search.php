@@ -140,9 +140,9 @@ class Search implements Searcher
 
         //$this->havingIn($builder);
 
-        $this->paginateIn($builder);
+        $this->lastBuilder = $builder->clone();
 
-        $this->lastBuilder = $builder;
+        $this->paginateIn($builder);
 
         return $builder->get();
     }
@@ -239,7 +239,7 @@ class Search implements Searcher
      */
     public function count(bool $reCount = false) : int
     {
-        $builder = $this->builder();
+        $builder = $this->getLastBuilder();
 
         if(is_null($this->pagination['total']) || $reCount){
             $this->pagination['total'] = $builder->count();
