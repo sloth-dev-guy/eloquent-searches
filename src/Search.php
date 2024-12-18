@@ -257,10 +257,6 @@ class Search implements Searcher
      */
     public function pagination() : array
     {
-        if(is_null($this->pagination['total'])){
-            $this->count();
-        }
-
         return $this->pagination;
     }
 
