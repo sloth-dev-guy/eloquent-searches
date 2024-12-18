@@ -81,8 +81,9 @@ class SearchResponseSchema implements SearchResponseSchemaInterface
     {
         $pagination = $this->search()->pagination();
         $page = data_get($pagination, 'page');
+        $max = data_get($pagination, 'max');
 
-        return $page > 0 || $this->forcePagination;
+        return ($page > 0 && $max > 0) || $this->forcePagination;
     }
 
     /**
@@ -104,19 +105,18 @@ class SearchResponseSchema implements SearchResponseSchemaInterface
      */
     protected function mapWithPagination() : array
     {
-        $pagination = $this->search()->pagination();
-
         $mapWithPagination = [];
+        $itemKey = config('searches.responses.pagination_keys.items', 'items');
+        $mapWithPagination[$itemKey] = $this->map();
 
+        $this->search()->count();
+        $pagination = $this->search()->pagination();
         foreach ($pagination as $key => $value){
             $newKey = config("searches.responses.pagination_keys.{$key}", $key);
-
             //all pagination values should be integer values
             $mapWithPagination[$newKey] = (int) $value;
         }
 
-        $itemKey = config('searches.responses.pagination_keys.items', 'items');
-        $mapWithPagination[$itemKey] = $this->map();
 
         return $mapWithPagination;
     }
