@@ -1,4 +1,4 @@
-FROM php:8.4-cli-alpine
+FROM php:8.5-cli-alpine
 
 LABEL maintainer="Telmo Rafael <sloth.dev.guy@gmail.com>"
 
@@ -10,8 +10,6 @@ RUN apk add --no-cache $PHPIZE_DEPS git zip unzip \
     && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
     && touch /var/database.sqlite
 
-#WORKDIR /app
-
-#COPY . /app
+WORKDIR /app
 
 ENTRYPOINT ["docker-php-entrypoint"]
